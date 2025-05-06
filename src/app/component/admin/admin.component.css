@@ -1,0 +1,142 @@
+.admin {
+  margin: auto;
+}
+
+.title {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.panel {
+  margin-top: 35px;
+  display: flex;
+  flex-direction: row;
+}
+
+.container {
+  margin-left: 90px;
+  padding: 25px 45px 35px;
+  text-align: center;
+  background: #ffffff;
+  max-width: 560px;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  border-radius: 15px;
+  width: 100%;
+  max-height: 380px;
+}
+
+h1,
+h2 {
+  color: rgb(56, 16, 123);
+}
+
+.select-body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+select {
+  appearance: none;
+  outline: 0;
+  border: 0 !important;
+  background: var(--accent-color);
+  flex: 1;
+  padding: 0 0.7em;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1em;
+  font-family: "Roboto", sans-serif;
+}
+
+.select {
+  position: relative;
+  display: flex;
+  width: 49%;
+  height: 3em;
+  line-height: 3;
+  overflow: hidden;
+  border-radius: 0.8em;
+}
+
+.select::after {
+  content: "\25BC";
+  position: absolute;
+  right: 0;
+  border-radius: 0.8em;
+  padding: 0 1em;
+  background: var(--accent-color);
+  cursor: pointer;
+  transition: 0.25s all ease;
+  color: #fff;
+}
+
+.select:hover::after {
+  color: #4a0fb6;
+}
+
+.note {
+  margin-top: 25px;
+  font-size: 1.2rem;
+  padding: 1.3rem 6rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  background-image: url(https://static.tumblr.com/maopbtg/E9Bmgtoht/lines.png),
+  url(https://static.tumblr.com/maopbtg/nBUmgtogx/paper.png);
+  border: none;
+  outline: none;
+}
+
+.assign {
+  margin-top: 40px;
+}
+
+button {
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  background: var(--accent-color);
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  color: #ffffff;
+  font-size: 20px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
+  border-radius: 25px;
+}
+
+.container button:hover,
+.container button:active,
+.container button:focus {
+  background: #6b4fc1;
+}
+
+.btn {
+  margin-left: 30px;
+  padding: 5px 25px 15px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  max-width: 16%;
+  height: 100%;
+}
+
+.btn__row {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn__row button {
+  font-size: 12px;
+  background-color: var(--secondary-color);
+  margin-top: 10px;
+}
+
+.btn__row button:hover {
+  background: #5a2ae7;
+}

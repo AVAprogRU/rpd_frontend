@@ -1,0 +1,27 @@
+<div class="login">
+  <div class="login__container">
+    <form class="login__form" [formGroup]="form">
+      <div class="login__tittle" *ngIf="!isLoggedIn">
+        <p>Вход в систему</p>
+      </div>
+
+      <div class="login__tittle" *ngIf="isLoggedIn">
+        <p>Выход из системы</p>
+      </div>
+
+      <div class="if-log" *ngIf="!isLoggedIn">
+        <input formControlName="email" id="email" type="text" placeholder="Логин"/>
+        <input formControlName="password" id="password" type="password" placeholder="Пароль"/>
+      </div>
+      <div *ngIf="isLoggedIn">
+        <button type="submit" (click)="signOut()">Выйти</button>
+      </div>
+      <div *ngIf="!isLoggedIn">
+        <button type="submit" (click)="login()">Войти</button>
+      </div>
+    </form>
+    <div *ngIf="isLoginFailed && !form?.touched" class="errorMessage">
+      <p>Ошибка: {{ errorMessage }}</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div id="main-container">
+  <nav class="navbar">
+    <div class="navbar__logo">
+      <a routerLink="/"><img src="../assets/img/guap.svg" alt="" /></a>
+    </div>
+    <div class="navbar__link">
+      <ul>
+        <li>
+          <a routerLink="/">Введение</a>
+        </li>
+        <li>
+          <a routerLink="/login">Логин</a>
+        </li>
+        <li *ngIf="isAdmin">
+          <a routerLink="/admin">Администратор</a>
+        </li>
+        <li *ngIf="isTeacher">
+          <a routerLink="/teacher">Преподаватель</a>
+        </li>
+      </ul>
+    </div>
+    <hr />
+  </nav>
+
+  <div class="jumbotron">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 offset-sm-2">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="footer">
+    <p>&copy; rloutsker — 2024</p>
+    <p>
+      ФГАОУ ВО «Санкт-Петербургский государственный университет аэрокосмического
+      приборостроения»
+    </p>
+  </div>
+</div>

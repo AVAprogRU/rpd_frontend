@@ -1,0 +1,69 @@
+<div class="admin">
+  <div class="title"><h1>Панель администратора</h1></div>
+  <div class="panel">
+    <div class="btn">
+      <div class="btn__row">
+        <input style="display: none" type="file" (change)="uploadTemplateFile($event)" #fileTemplateUpload/>
+        <button (click)="fileTemplateUpload.click()" class="button">Загрузить шаблон (docx)</button>
+
+        <input style="display: none" type="file" (change)="uploadTeacherFile($event)" #fileTeachUpload/>
+        <button (click)="fileTeachUpload.click()" class="button">Загрузить список преподавателей (xlsx)</button>
+
+        <input style="display: none" type="file" (change)="uploadTranslationFile($event)" #fileTranslateUpload/>
+        <button (click)="fileTranslateUpload.click()" class="button">Загрузить новый файл перевода полей (json)</button>
+
+        <input style="display: none" type="file" (change)="uploadDisciplineFile($event)" #fileDiscUpload/>
+        <button (click)="fileDiscUpload.click()" class="button">Загрузить список дисциплин (json)</button>
+
+        <input style="display: none" type="file" (change)="uploadSampleFile($event)" #fileSampleUpload/>
+        <button (click)="fileSampleUpload.click()" class="button">Загрузить примеры заполнения (json)</button>
+      </div>
+    </div>
+
+    <div class="btn">
+      <div class="btn__row">
+        <button (click)="getTemplateFile()" class="button">Скачать шаблон РПД (docx)</button>
+
+        <button (click)="getTeacherFile()" class="button">Скачать файл преподавателей (xlsx)</button>
+
+        <button (click)="getTranslationFile()" class="button">Скачать файл перевода (json)</button>
+
+        <button (click)="getSampleFile()" class="button">Скачать файл примеров заполнения (json)</button>
+
+        <button (click)="getDisciplineFile()" class="button">Скачать файл УМО (json)</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div><h2>Назначение РПД</h2></div>
+      <form [formGroup]="form">
+        <div class="select-body">
+          <div class="select">
+            <select formControlName="selectTeacher">
+              <option [value]="null" selected disabled>Преподаватели</option>
+              <option *ngFor="let teacher of teachers" [value]="teacher.id">
+                {{ teacher.lastname }} {{ teacher.name }}
+                {{ teacher.patronymic }}
+              </option>
+            </select>
+          </div>
+          <div class="select">
+            <select name="" id="" formControlName="selectDiscipline">
+              <option selected disabled [value]="null">Дисциплины</option>
+              <option
+                *ngFor="let discipline of disciplines"
+                [value]="discipline.id"
+              >
+                {{ discipline.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <textarea class="note" type="text" formControlName="inputNote" placeholder="Введите заметку..." ></textarea>
+        <button class="assign" type="submit" (click)="assignRPD()">
+          Назначить РПД
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

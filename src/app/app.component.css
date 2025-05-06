@@ -1,0 +1,48 @@
+.navbar__logo,
+.navbar__link {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.navbar__logo {
+  width: 140px;
+  height: 55px;
+  vertical-align: middle;
+  margin-right: 50px;
+}
+
+.navbar__logo img {
+  height: 100%;
+  width: 100%;
+}
+
+li {
+  margin-right: 30px;
+}
+
+.navbar__link li {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.navbar__link a {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 25px;
+  text-decoration: none;
+  vertical-align: middle;
+  color: rgb(26, 6, 110);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  vertical-align: middle;
+  flex: 0 0 auto;
+  font-family: "Roboto", sans-serif;
+}
+
+p {
+  margin: 4px;
+}

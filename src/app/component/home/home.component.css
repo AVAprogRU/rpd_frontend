@@ -1,0 +1,38 @@
+.footer {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  vertical-align: middle;
+  flex: 0 0 auto;
+  font-family: "Roboto", sans-serif;
+}
+
+.about {
+  padding: 25px 50px;
+  font-size: 16px;
+}
+
+.functional {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+ul {
+  list-style-position: inside;
+  padding-left: 20px;
+  width: auto;
+}
+
+li:first-child {
+  margin-top: 8px;
+}
+
+.container {
+  display: flex;
+}
+
+.logo {
+  margin-left: 180px;
+  margin-top: 60px;
+}

@@ -1,0 +1,69 @@
+.login {
+  width: 360px;
+  padding: 50px;
+  margin: auto;
+}
+
+.login__container {
+  background: #ffffff;
+  max-width: 360px;
+  margin: 0 auto 0;
+  padding: 25px 45px 45px;
+  text-align: center;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  border-radius: 15px;
+}
+
+.login__tittle {
+  margin-bottom: 35px;
+  font-size: 20px;
+  color: rgb(56, 16, 123);
+}
+
+.login__container input {
+  font-family: "Roboto", sans-serif;
+  background: #f2f2f2;
+  width: 100%;
+  border: 0;
+  margin: 10px 0 5px;
+  padding: 15px;
+  box-sizing: border-box;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.errorInput {
+  outline: 1px solid red;
+}
+
+input:focus,
+input:active {
+  outline: var(--accent-color) 1px solid;
+}
+
+.login__container button {
+  font-family: "Roboto", sans-serif;
+  text-transform: uppercase;
+  background: var(--accent-color);
+  width: 100%;
+  border: 0;
+  padding: 15px;
+  color: #ffffff;
+  font-size: 14px;
+  -webkit-transition: all 0.3 ease;
+  transition: all 0.3 ease;
+  cursor: pointer;
+  border-radius: 25px;
+  margin-top: 20px;
+}
+
+.login__container button:hover,
+.login__container button:active,
+.login__container button:focus {
+  background: #6b4fc1;
+}
+
+.errorMessage {
+  color: red;
+  margin-top: 20px;
+}

@@ -1,0 +1,199 @@
+<div id="main-container">
+  <div id="discipline-selection-area">
+    <h3>Выбереите дисциплину для заполнения РПД</h3>
+    <div class="discipline">
+      <div class="select-body">
+        <div class="select">
+          <select [(ngModel)]="selectedDisciplineId" (change)="initializeWorkflow()">
+            <option [ngValue]="null">Импорт РПД</option>
+            <option *ngFor="let discipline of assignedDisciplines" [ngValue]="discipline.id">
+              {{ discipline.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedDisciplineId == null" id="import-form">
+    <h3>Импорт РПД</h3>
+    <div id="form-container">
+      <form [formGroup]="importForm" (ngSubmit)="findRPD()">
+        <div class="form-group">
+          <label for="text1">Наименование дисциплины:</label>
+          <input type="text" id="text1" formControlName="disciplineName" placeholder="Название дисциплины">
+        </div>
+        <div class="form-group">
+          <label for="text2">Преподаватель:</label>
+          <input type="text" id="text2" formControlName="authorName" placeholder="Фамилия и инициалы преподавателя">
+        </div>
+        <div class="form-group">
+          <label for="text3">Год зачисления:</label>
+          <input type="text" id="text3" formControlName="year" placeholder="Год зачисления">
+        </div>
+        <div class="form-group">
+          <label for="number1">Код программы подготовки:</label>
+          <input type="number" id="number1" formControlName="programCode" placeholder="Код программы подготовки">
+        </div>
+        <button type="submit">Поиск</button>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="selectedDisciplineId == null" id="import-select-area">
+    <ng-container *ngIf="foundRPDVersions.length > 0; else noOptions">
+      <div class="form-group">
+        <label for="dynamicSelect">Выберете дисциплилну:</label>
+        <select id="dynamicSelect" [(ngModel)]="selectedRPDToImportId" (change)="initializeImport()" name="dynamicSelect">
+          <option *ngFor="let rpd of foundRPDVersions" [value]="rpd.id">
+            {{ rpd.id }} {{ rpd.author_name }} {{ rpd.discipline_name }} {{ rpd.enroll_year }} {{ rpd.program_code }} -
+            Образование:
+            {{ rpd.body.master_degree ? 'Магистр' : '' }}
+            {{ rpd.body.bachelor_degree ? 'Бакалавр' : '' }}
+            {{ rpd.body.specialist_degree ? 'Специалист' : '' }} -
+            Формат:
+            {{ rpd.body.full_education_format ? 'Очное' : '' }}
+            {{ rpd.body.evening_education_format ? 'Вечернее' : '' }}
+            {{ rpd.body.extramural_education_format ? 'Заочное' : '' }} -
+            Аттестация:
+            {{ rpd.body.exam_attestation_type ? 'Экзамен ' : '' }}
+            {{ rpd.body.test_attestation_type ? 'Зачет ' : '' }}
+            {{ rpd.body.diff_test_attestation_type ? 'Дифференцированный зачет' : '' }} -
+            Курсовая: {{ rpd.body.has_coursework ? 'Да' : 'Нет' }}
+          </option>
+        </select>
+      </div>
+    </ng-container>
+    <ng-template #noOptions>
+      <p>Используйте форму выше для импорта РПД</p>
+    </ng-template>
+  </div>
+
+  <div *ngIf="selectedDisciplineId != null || importInitialized" id="essentials-area">
+    <div *ngIf="disciplineEssentials">
+      <h3>Основная информация:</h3>
+      <div>{{ teacher?.name }} {{ teacher?.lastname }}</div>
+      <div>{{ teacher?.position?.position }} {{ teacher?.position?.academicDegree }} {{ teacher?.position?.scientificTitle }}</div>
+      <div>Название дисциплины: {{ disciplineEssentials.disciplineName }}</div>
+      <div>Код образовательной программы: {{ disciplineEssentials.programCode }}</div>
+      <div>
+        Год реализации учебной дисциплины (год зачисления студентов):
+        {{ disciplineEssentials.enrollYear }}
+      </div>
+      <div>
+        Степень образования:
+        <span *ngIf="disciplineEssentials.masterDegree">Магистр</span>
+        <span *ngIf="disciplineEssentials.bachelorDegree">Бакалавр</span>
+        <span *ngIf="disciplineEssentials.specialistDegree">Специалист</span>
+      </div>
+      <div>
+        Формат обучения:
+        <span *ngIf="disciplineEssentials.fullEducationFormat">Очное</span>
+        <span *ngIf="disciplineEssentials.eveningEducationFormat">Вечернее</span>
+        <span *ngIf="disciplineEssentials.extramuralEducationFormat">Заочное</span>
+      </div>
+      <div>
+        Тип аттестации:
+        <span *ngIf="disciplineEssentials.examAttestationType">Экзамен</span>
+        <span *ngIf="disciplineEssentials.testAttestationType">Зачет</span>
+        <span *ngIf="disciplineEssentials.diffTestAttestationType">Дифференцированный зачет</span>
+      </div>
+      <div>Наличие курсовой: {{ disciplineEssentials.hasCoursework ? "Да" : "Нет" }}</div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedDisciplineId != null|| importInitialized" id="paragraph-area">
+    <div *ngFor="let paragraph of templateParagraphs; trackBy: trackByPlaceholder" class="paragraph-container">
+      <h3>{{ paragraph['translation'] }}</h3>
+      <textarea type="text" [(ngModel)]="paragraph.sample" [placeholder]="paragraph.sample" class="paragraph-input"></textarea>
+    </div>
+  </div>
+
+  <div *ngIf="selectedDisciplineId != null || importInitialized" id="tables-area">
+    <div *ngFor="let table of templateTables; let tableIndex = index; trackBy: trackByTableIndex" class="table-container">
+      <ng-container *ngIf="!table.hidden">
+        <h4>{{ table['name'] }}</h4>
+        <table>
+          <thead>
+          <tr>
+            <th *ngFor="let header of table['displayedHeaders']">{{ header }}</th>
+            <th *ngIf="table['displayedHeaders'].length < table['maxColumns']" [attr.colspan]="table['maxColumns'] - table['displayedHeaders'].length"></th>
+            <ng-container *ngIf="!table['readonly']; else emptyColumn">
+              <th>Редактирование</th>
+            </ng-container>
+            <ng-template #emptyColumn></ng-template>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let row of table['body'].rows; let rowIndex = index; trackBy: trackByRowIndex">
+            <ng-container *ngFor="let cell of row; let cellIndex = index; trackBy: trackByCellIndex">
+              <td
+                [attr.colspan]="row.length < table['maxColumns'] && cellIndex
+                    === row.length - 1 ? table['maxColumns'] - row.length + 1 : null"
+                [ngClass]="{'blurred-cell': isCellMarked(tableIndex, rowIndex, cellIndex)}"
+              >
+                <ng-container *ngIf="!table['indicatored'] || cellIndex < row.length - 1">
+                  <textarea type="text"
+                            class="input-cell"
+                            (input)="onInput($event, tableIndex, rowIndex, cellIndex)"
+                            [(ngModel)]="table['body'].rows[rowIndex][cellIndex]"
+                            [readOnly]="table['readonly']">
+                  </textarea>
+                </ng-container>
+                <ng-container *ngIf="table['indicatored'] && cellIndex === row.length - 1">
+                  <div *ngIf="row.length == 1">
+                    <textarea type="text"
+                              class="input-cell"
+                              (input)="onInput($event, tableIndex, rowIndex, cellIndex)"
+                              [(ngModel)]="table['body'].rows[rowIndex][cellIndex]"
+                              [readOnly]="table['readonly']"></textarea>
+                  </div>
+                  <div *ngIf="row.length != 1" class="checkbox-group">
+                    <label *ngFor="let code of codes">
+                      <input type="checkbox"
+                             [value]="code"
+                             (change)="onCheckboxChange($event, tableIndex, rowIndex, cellIndex)"
+                             [checked]="isCheckboxChecked(code, cell)" />
+                      {{ code }} <br />
+                    </label>
+                  </div>
+                </ng-container>
+                <div *ngIf="table['imageable'] && !table['readonly']">
+                  <button (click)="openImageUploadDialog(tableIndex, rowIndex, cellIndex)">Добавить картинку</button>
+                  <img class="image-preview"
+                       alt="Uploaded Image"
+                       *ngIf="getImageForCell(tableIndex, rowIndex, cellIndex) != null"
+                       [src]="getImageForCell(tableIndex, rowIndex, cellIndex)">
+                </div>
+              </td>
+            </ng-container>
+            <td *ngIf="row.length > 0 && !table['readonly']">
+              <div class="action-buttons-row">
+                <button (click)="addRowAfter(tableIndex, rowIndex)">Добавить строку после</button>
+                <button (click)="addRowBefore(tableIndex, rowIndex)">Добавить строку перед</button>
+<!--                <button (click)="addSpannedRowToTable(tableIndex, rowIndex)">Add header</button>-->
+                <button class="delete" (click)="deleteRow(tableIndex, rowIndex)">Удалить строку</button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <div *ngIf="!table['readonly'] && (table['body'].rows.length == 1 ||  table['body'].rows.length == 0)" class="action-buttons-below">
+          <button (click)="addRowAfter(tableIndex, 0)">Добавить строку</button>
+          <button (click)="addSpannedRowToTable(tableIndex, 0)">Добавить заголовок</button>
+        </div>
+        <div *ngIf="tableIndex === (contentTableIndex - tableOffset)" class="action-buttons-below">
+          <button (click)="shareSections()">Установить разделы дисциплины</button>
+          <button (click)="importLabAndSeminarHoursToSections()">Импортировать часы по ЛР и ПЗ(СЗ)</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div *ngIf="selectedDisciplineId != null|| importInitialized" id="final-panel">
+    <button (click)="validate()">Проверить РПД</button>
+    <div *ngIf="validated">
+      <button (click)="draft()">Сохранить РПД</button>
+    </div>
+  </div>
+</div>

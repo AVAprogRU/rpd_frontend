@@ -1,0 +1,20 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:300);
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+:root {
+  --main-bg-color: rgba(10, 54, 255, 0.14);
+  --accent-color: #654caf;
+  --secondary-color: #6639ee;
+}
