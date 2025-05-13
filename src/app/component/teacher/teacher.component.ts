@@ -118,6 +118,63 @@ export class TeacherComponent {
     );
   }
 
+  initializeImportNew(): void {
+    // Проверка на null и преобразование
+    if (this.selectedDisciplineId === undefined || this.selectedRPDToImportId === null) {
+      alert('Не выбрана дисциплина или РПД для импорта');
+      return;
+    }
+    this.importInitialized = true;
+    this.teacherService.createMergedRPD(this.selectedDisciplineId, this.selectedRPDToImportId).subscribe(
+      data => {
+        let rpd: RPDEntity = data;
+        // setup essentials
+        this.disciplineEssentials = {
+          terms: rpd.body.terms,
+          achievementsIndicators: rpd.body?.competences?.map((comp: any) => {return comp.achievementsIndicators?.map((ind: any) => {<string>ind.code})}),
+          hasCoursework: rpd.body.has_coursework,
+          enrollYear: rpd.enroll_year,
+          disciplineName: rpd.discipline_name,
+          programCode: rpd.program_code,
+          testAttestationType: rpd.body.test_attestation_type,
+          diffTestAttestationType: rpd.body.diff_test_attestation_type,
+          extramuralEducationFormat: rpd.body.extramural_education_format,
+          examAttestationType: rpd.body.exam_attestation_type,
+          fullEducationFormat: rpd.body.full_education_format,
+          bachelorDegree: rpd.body.bachelor_degree,
+          eveningEducationFormat: rpd.body.evening_education_format,
+          masterDegree: rpd.body.master_degree,
+          specialistDegree: rpd.body.specialist_degree
+        };
+        // merge paragraphs
+        this.teacherService.getTemplateParagraphs().subscribe(
+          data => {
+            this.templateParagraphs = data;
+            let rpdParagraphs = this.createParagraphArray(rpd.body.placeholders);
+            this.templateParagraphs.forEach((templateParagraph: Paragraph) => {
+              rpdParagraphs.forEach((rpdParagraph: Paragraph) => {
+                if (templateParagraph.placeholder == rpdParagraph.placeholder) {
+                  templateParagraph.sample = rpdParagraph.sample;
+                }
+              });
+            });
+          }
+        );
+        // extract codes
+        this.codes = rpd.body.competences.map((competence: any) => {
+          return competence.achievement_indicators?.map((indicator: any) => {
+            return indicator.code;
+          });
+        });
+        this.codes = this.codes.join(',').split(',');
+        console.log(JSON.stringify(this.codes));
+        // extract from data.body.tables
+        this.templateTables = this.extractTableData(rpd.body.tables);
+        this.processImportedTables();
+      }
+    );
+  }
+
   // RPD \\
   saveFileToDesktop(base64: string, fileName: string, contentType: string): void {
     try {

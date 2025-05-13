@@ -60,6 +60,17 @@ export class TeacherService {
     );
   }
 
+  public createMergedRPD(selectedDisciplineId: number ,
+                         selectedRPDToImportId: number): Observable<any> {
+    const params = new HttpParams()
+      .set('selectedDisciplineId', selectedDisciplineId)
+      .set('selectedRPDToImportId', selectedRPDToImportId);
+    return this.http.get(
+      this.address + '/secured/rpd/import/merged',
+      {params}
+    );
+  }
+
   public getRPDByProperties(enrollYear: number, disciplineName: string,
                             authorName: string, programCode: string): Observable<any> {
     const params = new HttpParams()

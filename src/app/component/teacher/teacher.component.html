@@ -5,7 +5,6 @@
       <div class="select-body">
         <div class="select">
           <select [(ngModel)]="selectedDisciplineId" (change)="initializeWorkflow()">
-            <option [ngValue]="null">Импорт РПД</option>
             <option *ngFor="let discipline of assignedDisciplines" [ngValue]="discipline.id">
               {{ discipline.name }}
             </option>
@@ -15,7 +14,7 @@
     </div>
   </div>
 
-  <div *ngIf="selectedDisciplineId == null" id="import-form">
+  <div *ngIf="selectedDisciplineId != null" id="import-form">
     <h3>Импорт РПД</h3>
     <div id="form-container">
       <form [formGroup]="importForm" (ngSubmit)="findRPD()">
@@ -40,11 +39,11 @@
     </div>
   </div>
 
-  <div *ngIf="selectedDisciplineId == null" id="import-select-area">
+  <div *ngIf="selectedDisciplineId != null" id="import-select-area">
     <ng-container *ngIf="foundRPDVersions.length > 0; else noOptions">
       <div class="form-group">
         <label for="dynamicSelect">Выберете дисциплилну:</label>
-        <select id="dynamicSelect" [(ngModel)]="selectedRPDToImportId" (change)="initializeImport()" name="dynamicSelect">
+        <select id="dynamicSelect" [(ngModel)]="selectedRPDToImportId" (change)="initializeImportNew()" name="dynamicSelect">
           <option *ngFor="let rpd of foundRPDVersions" [value]="rpd.id">
             {{ rpd.id }} {{ rpd.author_name }} {{ rpd.discipline_name }} {{ rpd.enroll_year }} {{ rpd.program_code }} -
             Образование:
