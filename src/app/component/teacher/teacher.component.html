@@ -148,7 +148,10 @@
                               [readOnly]="table['readonly']"></textarea>
                   </div>
                   <div *ngIf="row.length != 1" class="checkbox-group">
-                    <label *ngFor="let code of codes">
+                    <label *ngFor="let code of codes"
+                           [ngStyle]="code === 'ПК' ? { 'background-color': 'red','padding': '4px',
+         'border-radius': '4px' } : {}"
+                      >
                       <input type="checkbox"
                              [value]="code"
                              (change)="onCheckboxChange($event, tableIndex, rowIndex, cellIndex)"

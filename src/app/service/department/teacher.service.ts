@@ -66,7 +66,7 @@ export class TeacherService {
       .set('selectedDisciplineId', selectedDisciplineId)
       .set('selectedRPDToImportId', selectedRPDToImportId);
     return this.http.get(
-      this.address + '/secured/rpd/import/merged',
+      this.address + '/secured/rpd/mergedtables',
       {params}
     );
   }

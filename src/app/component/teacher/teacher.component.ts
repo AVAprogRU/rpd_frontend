@@ -90,7 +90,7 @@ export class TeacherComponent {
           specialistDegree: rpd.body.specialist_degree
         };
         // merge paragraphs
-        this.teacherService.getTemplateParagraphs().subscribe(
+        /*this.teacherService.getTemplateParagraphs().subscribe(
           data => {
             this.templateParagraphs = data;
             let rpdParagraphs = this.createParagraphArray(rpd.body.placeholders);
@@ -102,7 +102,7 @@ export class TeacherComponent {
               });
             });
           }
-        );
+        );*/
         // extract codes
         this.codes = rpd.body.competences.map((competence: any) => {
           return competence.achievement_indicators?.map((indicator: any) => {
@@ -160,13 +160,13 @@ export class TeacherComponent {
             });
           }
         );
-        // extract codes
+        // вынимаем индикаторы
         this.codes = rpd.body.competences.map((competence: any) => {
           return competence.achievement_indicators?.map((indicator: any) => {
             return indicator.code;
           });
         });
-        this.codes = this.codes.join(',').split(',');
+        this.codes = this.codes.join(',').split(','); //хз gpt рекомендует .flat()
         console.log(JSON.stringify(this.codes));
         // extract from data.body.tables
         this.templateTables = this.extractTableData(rpd.body.tables);
@@ -206,16 +206,16 @@ export class TeacherComponent {
         break;
       }
     }
-    // tables has more rows than defaults
-    for (let j = 0; j < this.templateTables.length; j++) {
+    // отключил проверку наполняемости таблиц (она не работает так, как надо)
+   /* for (let j = 0; j < this.templateTables.length; j++) {
       let table: TableDataDTO = this.templateTables[j];
       if (table.body.rows.length > 0) {
         validationList += '- All tables must be filled out\n';
         break;
       }
-    }
+    }*/
     // imported hours are matched in section table
-    this.importLabAndSeminarHoursToSections();
+    //this.importLabAndSeminarHoursToSections();  тоже мешает отправлять
     // all sums in tables 5-7 are matched
     // seminar table (5)
     const seminarTableIndex = this.contentTableIndex - this.tableOffset + 2;
@@ -679,8 +679,8 @@ export class TeacherComponent {
     if (!cellValue) {
       cellValue = '';
     }
-
-    const selectedCodes = cellValue.split(',').filter(value => value);
+    // как я понял такой разделитель нужен чтоб сразу в документ вставлять с переносом строк
+    const selectedCodes = cellValue.split('\n').filter(value => value);
 
     if (target.checked) {
       if (!selectedCodes.includes(code)) {
@@ -698,7 +698,7 @@ export class TeacherComponent {
 
   isCheckboxChecked(code: string, cellValue: string): boolean {
     if (!cellValue) return false;
-    const selectedCodes = cellValue.split(',').filter(value => value);
+    const selectedCodes = cellValue.split('\n').filter(value => value);
     return selectedCodes.includes(code);
   }
 
@@ -760,28 +760,15 @@ export class TeacherComponent {
     }
   }
 
+  // потом заменить на processTemplateTables() потому что по сути они одинаковы
   private processImportedTables(): void {
     console.log(JSON.stringify(this.templateTables));
     console.log('-------before--^-------------------------');
-    // set displayed headers
-    this.templateTables = this.templateTables.map(table => this.processHiddenTableHeaders(table));
-    this.updateMaxColumns();
-    // mark imageable and indicatored
-    this.templateTables.forEach(table => {
-      let index: number = this.templateTables.indexOf(table);
-      if ((index >= this.assessmentTableIndex - this.tableOffset + 1) && (index <= this.assessmentTableIndex - this.tableOffset + 6)) {
-        table.imageable = true;
-        table.indicatored = false;
-        if (index == this.assessmentTableIndex - this.tableOffset + 2
-          || index == this.assessmentTableIndex - this.tableOffset + 3
-          || index == this.assessmentTableIndex - this.tableOffset + 5) {
-          table.indicatored = true;
-        }
-      }
-    });
     this.templateTables = this.templateTables.map(table => this.processEmptyRows(table));
     this.templateTables = this.templateTables.map(table => this.processEmptyCells(table));
-
+    this.templateTables = this.templateTables.map(table => this.processMandatoryTables(table));
+    this.templateTables = this.templateTables.map(table => this.processHiddenTableHeaders(table));
+    this.updateMaxColumns();
     console.log(JSON.stringify(this.templateTables));
     console.log('-------after--^-------------------------');
     this.cdr.detectChanges();
@@ -850,14 +837,14 @@ export class TeacherComponent {
         });
         this.addControlSumRow(index, totalSum);
       }
+
       // lecture table
       if ((index == this.contentTableIndex - this.tableOffset + 1) && (this.getSum(lectureHours) == 0)) {
         table.hidden = true;
+        table.body = this.createEmptyTableDTO();    //если у нас таблица скрыта, то и наполнения не должно быть
       }
+
       // seminar table
-      if ((index == this.contentTableIndex - this.tableOffset + 2) && (this.getSum(seminarHours) == 0)) {
-        table.hidden = true;
-      }
       if (index == this.contentTableIndex - this.tableOffset + 2) {
         terms.forEach((term: Term) => {
           let sums: any[] = [
@@ -873,10 +860,12 @@ export class TeacherComponent {
           }
         });
       }
-      // laboratory table
-      if ((index == this.contentTableIndex - this.tableOffset + 3) && (this.getSum(laboratoryHours) == 0)) {
+      if ((index == this.contentTableIndex - this.tableOffset + 2) && (this.getSum(seminarHours) == 0)) {
         table.hidden = true;
+        table.body =  this.createEmptyTableDTO();  //если у нас таблица скрыта, то и наполнения не должно быть
       }
+
+      // laboratory table
       if (index == this.contentTableIndex - this.tableOffset + 3) {
         terms.forEach((term: Term) => {
           let sums: any[] = [
@@ -891,14 +880,20 @@ export class TeacherComponent {
           }
         });
       }
-      // solo work table
-      if ((index == this.contentTableIndex - this.tableOffset + 4) && (this.getSum(soloHours) == 0)) {
+      if ((index == this.contentTableIndex - this.tableOffset + 3) && (this.getSum(laboratoryHours) == 0)) {
         table.hidden = true;
+        table.body =  this.createEmptyTableDTO();
       }
+
+      // solo work table
       if (index == this.contentTableIndex - this.tableOffset + 4) {
         let sums = ['Total sum:', '' + this.getSum(soloHours)];
         terms.forEach(term => {sums.push('' + term.solo_hours)});
         this.presetResultRow(sums, index);
+      }
+      if ((index == this.contentTableIndex - this.tableOffset + 4) && (this.getSum(soloHours) == 0)) {
+        table.hidden = true;
+        table.body =  this.createEmptyTableDTO();
       }
 
       // attestation tables
@@ -913,9 +908,6 @@ export class TeacherComponent {
         table.hidden = false;
       }
       // exam questions table
-      if ((index == this.assessmentTableIndex - this.tableOffset + 2) && (!this.disciplineEssentials.examAttestationType)) {
-        table.hidden = true;
-      }
       if (index == this.assessmentTableIndex - this.tableOffset + 2) {
         table.indicatored  = true;
         this.templateTables[index].imageable = true;
@@ -923,11 +915,11 @@ export class TeacherComponent {
           this.presetResultRow([('Term ' + term.number)], index);
         });
       }
-      // diff test/test questions table
-      if ((index == this.assessmentTableIndex - this.tableOffset + 3)
-        && (!this.disciplineEssentials.diffTestAttestationType && !this.disciplineEssentials.testAttestationType)) {
+      if ((index == this.assessmentTableIndex - this.tableOffset + 2) && (!this.disciplineEssentials.examAttestationType)) {
         table.hidden = true;
+        table.body =  this.createEmptyTableDTO();
       }
+      // diff test/test questions table
       if (index == this.assessmentTableIndex - this.tableOffset + 3) {
         table.indicatored  = true;
         this.templateTables[index].imageable = true;
@@ -935,9 +927,15 @@ export class TeacherComponent {
           this.presetResultRow([('Term ' + term.number)], index);
         });
       }
+      if ((index == this.assessmentTableIndex - this.tableOffset + 3)
+        && (!this.disciplineEssentials.diffTestAttestationType && !this.disciplineEssentials.testAttestationType)) {
+        table.hidden = true;
+        table.body =  this.createEmptyTableDTO();
+      }
       // coursework/courseproject table
       if ((index == this.assessmentTableIndex - this.tableOffset + 4) && (!this.disciplineEssentials.hasCoursework)) {
         table.hidden = true;
+        table.body =  this.createEmptyTableDTO();
       }
       // test (Q&A) table
       if (index == this.assessmentTableIndex - this.tableOffset + 5) {
@@ -948,17 +946,31 @@ export class TeacherComponent {
         this.templateTables[index].imageable = true;
       }
       // test table
-      if ((index == this.assessmentTableIndex - this.tableOffset + 6)
-        && (this.getSum(testHours) == 0)
-        && (!this.disciplineEssentials?.extramuralEducationFormat || this.disciplineEssentials.hasCoursework)) {
-        table.hidden = true;
-      }
       if (index == this.assessmentTableIndex - this.tableOffset + 6) {
         this.templateTables[index].imageable = true;
         terms.forEach((term: Term) => {
           this.presetResultRow([('Term ' + term.number)], index);
         });
       }
+      if ((index == this.assessmentTableIndex - this.tableOffset + 6)
+        && (this.getSum(testHours) == 0)
+        && (!this.disciplineEssentials?.extramuralEducationFormat || this.disciplineEssentials.hasCoursework)) {
+        table.hidden = true;
+        table.body = this.createEmptyTableDTO();
+      }
+
+      if (this.importInitialized &&
+         (index == this.assessmentTableIndex - this.tableOffset + 2 ||
+          index == this.assessmentTableIndex - this.tableOffset + 3 ||
+          index == this.assessmentTableIndex - this.tableOffset + 5))
+      {
+        this.cleanUpCompetences(table, this.codes);
+        // Добавляю чекбокс, который обязательно должны снять при редактировании
+        if (!this.codes.includes("ПК")) {
+          this.codes.push("ПК");
+        }
+      }
+
     }
     return table;
   }
@@ -1002,7 +1014,7 @@ export class TeacherComponent {
       });
       for (let row = 0; row < table.body.rows.length; row++) {
         if (!headerRows.includes(row)) {
-          table.body.rows[row].filter((cell: string) => cell.trim() !== '');
+          table.body.rows[row] = table.body.rows[row].filter((cell: string) => cell.trim() !== '');
         }
       }
     } else {
@@ -1253,5 +1265,53 @@ export class TeacherComponent {
       }
       return true;
     });
+  }
+
+  /**
+   * Создает пустой TableDTO. Используется для очистки скрытых таблиц.
+   * */
+  private createEmptyTableDTO(): TableDTO {
+    return {
+      column_numbering: false,
+      row_numbering: false,
+      rows: [],
+      in_row_headers: [],
+      sums: [],
+      total_sum: {
+        row: 0,
+        text: '',
+        columns: []
+      },
+      images: []
+    };
+  }
+
+  /**
+   * Очищает выбранные коды индикаторов ПерсонКомпетенц не соответсвующие ПК дисциплины.
+   * Также добавлет якобы выбранный индикатор, чтоб препод обязательно снимал его.
+   * @param table таблица
+   * @param codes коды индикаторов ПК соответсующей дисциплины
+   * */
+  private cleanUpCompetences(table: TableDataDTO, codes: string[]): TableDataDTO {
+    const headerRows = table.body.in_row_headers.map(h => h.row);
+    table.body.rows = table.body.rows.map((row, rowIndex) => {
+      // Пропустить строки-заголовки и строки с одной ячейкой
+      if (headerRows.includes(rowIndex + 1) || row.length < 2) {
+        return row;
+      }
+
+      const originalCell = row[1] || '';
+      const selectedCodes = originalCell.split('\n').map(code => code.trim()).filter(code => codes.includes(code));
+
+      // Добавим "ПК", если его ещё нет
+      if (!selectedCodes.includes("ПК")) {
+        selectedCodes.push("ПК");
+      }
+      row[1] = selectedCodes.join('\n');
+
+      return row;
+    });
+
+    return table;
   }
 }
