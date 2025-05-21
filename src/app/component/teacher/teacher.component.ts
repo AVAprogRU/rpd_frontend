@@ -13,6 +13,7 @@ import {FormControl, FormGroup} from "@angular/forms";
 import {RPDEntity} from "../../model/RPDEntity";
 import {InRowHeader} from "../../model/table/InRowHeader";
 import {animateChild} from "@angular/animations";
+import {firstValueFrom} from "rxjs";
 
 @Component({
   selector: 'app-teacher',
@@ -59,63 +60,81 @@ export class TeacherComponent {
   }
 
   // workflow \\
-  initializeWorkflow(): void {
-    this.importInitialized = false;
-    this.downloadChosenDisciplineEssentials();
-    this.downloadTemplateParagraphs();
-    this.downloadTemplateTables();
+  async initializeWorkflow(): Promise<void> {
+    this.importInitialized = true;
+
+    const result = await this.tryGetRpd();
+    //если дисциплина еще не заполнена, то мы инициализируем
+    if (!result) {
+      this.importInitialized = false;
+      this.downloadChosenDisciplineEssentials();
+      this.downloadTemplateParagraphs();
+      this.downloadTemplateTables();
+    }
   }
 
-  initializeImport(): void {
-    this.importInitialized = true;
-    this.teacherService.getRPDbyId(this.selectedRPDToImportId).subscribe(
-      data => {
-        let rpd: RPDEntity = data;
-        // setup essentials
-        this.disciplineEssentials = {
-          terms: rpd.body.terms,
-          achievementsIndicators: rpd.body?.competences?.map((comp: any) => {return comp.achievementsIndicators?.map((ind: any) => {<string>ind.code})}),
-          hasCoursework: rpd.body.has_coursework,
-          enrollYear: rpd.enroll_year,
-          disciplineName: rpd.discipline_name,
-          programCode: rpd.program_code,
-          testAttestationType: rpd.body.test_attestation_type,
-          diffTestAttestationType: rpd.body.diff_test_attestation_type,
-          extramuralEducationFormat: rpd.body.extramural_education_format,
-          examAttestationType: rpd.body.exam_attestation_type,
-          fullEducationFormat: rpd.body.full_education_format,
-          bachelorDegree: rpd.body.bachelor_degree,
-          eveningEducationFormat: rpd.body.evening_education_format,
-          masterDegree: rpd.body.master_degree,
-          specialistDegree: rpd.body.specialist_degree
-        };
-        // merge paragraphs
-        /*this.teacherService.getTemplateParagraphs().subscribe(
-          data => {
-            this.templateParagraphs = data;
-            let rpdParagraphs = this.createParagraphArray(rpd.body.placeholders);
-            this.templateParagraphs.forEach((templateParagraph: Paragraph) => {
-              rpdParagraphs.forEach((rpdParagraph: Paragraph) => {
-                if (templateParagraph.placeholder == rpdParagraph.placeholder) {
-                  templateParagraph.sample = rpdParagraph.sample;
-                }
-              });
+  async tryGetRpd(): Promise<boolean> {
+    if (this.selectedDisciplineId === undefined || this.selectedRPDToImportId === null) {
+      return false;
+    }
+
+    try {
+      const rpd:RPDEntity = await firstValueFrom(this.teacherService.getRPDbyDisciplineId(this.selectedDisciplineId));
+      if (!rpd) return false;
+
+      this.disciplineEssentials = {
+        terms: rpd.body.terms,
+        achievementsIndicators: rpd.body?.competences?.map((comp: any) => {
+          return comp.achievementsIndicators?.map((ind: any) => {
+            <string>ind.code
+          })
+        }),
+        hasCoursework: rpd.body.has_coursework,
+        enrollYear: rpd.enroll_year,
+        disciplineName: rpd.discipline_name,
+        programCode: rpd.program_code,
+        testAttestationType: rpd.body.test_attestation_type,
+        diffTestAttestationType: rpd.body.diff_test_attestation_type,
+        extramuralEducationFormat: rpd.body.extramural_education_format,
+        examAttestationType: rpd.body.exam_attestation_type,
+        fullEducationFormat: rpd.body.full_education_format,
+        bachelorDegree: rpd.body.bachelor_degree,
+        eveningEducationFormat: rpd.body.evening_education_format,
+        masterDegree: rpd.body.master_degree,
+        specialistDegree: rpd.body.specialist_degree
+      };
+      this.selectedRPDToImportId = rpd.id; // затычка костыль посмотреть , при отправке на сервер это идет как импортированная дисциплина
+      // merge paragraphs
+      this.teacherService.getTemplateParagraphs().subscribe(
+        data => {
+          this.templateParagraphs = data;
+          let rpdParagraphs = this.createParagraphArray(rpd.body.placeholders);
+          this.templateParagraphs.forEach((templateParagraph: Paragraph) => {
+            rpdParagraphs.forEach((rpdParagraph: Paragraph) => {
+              if (templateParagraph.placeholder == rpdParagraph.placeholder) {
+                templateParagraph.sample = rpdParagraph.sample;
+              }
             });
-          }
-        );*/
-        // extract codes
-        this.codes = rpd.body.competences.map((competence: any) => {
-          return competence.achievement_indicators?.map((indicator: any) => {
-            return indicator.code;
           });
+        }
+      );
+      // extract codes
+      this.codes = rpd.body.competences.map((competence: any) => {
+        return competence.achievement_indicators?.map((indicator: any) => {
+          return indicator.code;
         });
-        this.codes = this.codes.join(',').split(',');
-        console.log(JSON.stringify(this.codes));
-        // extract from data.body.tables
-        this.templateTables = this.extractTableData(rpd.body.tables);
-        this.processImportedTables();
-      }
-    );
+      });
+      this.codes = this.codes.join(',').split(',');
+      console.log(JSON.stringify(this.codes));
+      // extract from data.body.tables
+      this.templateTables = this.extractTableData(rpd.body.tables);
+      this.processImportedTables();
+      return true;
+    }
+    catch (error) {
+      console.error('Ошибка при получении RPD:', error);
+      return false;
+    }
   }
 
   initializeImportNew(): void {
@@ -133,6 +152,7 @@ export class TeacherComponent {
           terms: rpd.body.terms,
           achievementsIndicators: rpd.body?.competences?.map((comp: any) => {return comp.achievementsIndicators?.map((ind: any) => {<string>ind.code})}),
           hasCoursework: rpd.body.has_coursework,
+          // по сути все что ниже не нужно так как уже с сервера идут те же данные, что и выбранная текущая дисциплина
           enrollYear: rpd.enroll_year,
           disciplineName: rpd.discipline_name,
           programCode: rpd.program_code,

@@ -52,10 +52,10 @@ export class TeacherService {
     );
   }
 
-  public getRPDbyId(id: number): Observable<any> {
-    const params = new HttpParams().set('id', id);
+  public getRPDbyDisciplineId(disciplineId: number): Observable<any> {
+    const params = new HttpParams().set('disciplineId', disciplineId);
     return this.http.get(
-      this.address + '/secured/rpd/crud/get',
+      this.address + '/secured/rpd/crud/getByDisciplineId',
       { params }
     );
   }
